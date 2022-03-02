@@ -64,4 +64,7 @@ public class UserState extends State<User> {
         .toList();
   }
 
+  public Map<String, User> getUsernameIndex() {
+    return usernameIndex;
+  }
 }
