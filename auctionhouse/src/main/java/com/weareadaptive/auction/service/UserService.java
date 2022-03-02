@@ -1,6 +1,8 @@
 package com.weareadaptive.auction.service;
 
 import com.weareadaptive.auction.model.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -45,24 +47,30 @@ public class UserService {
         return user;
     }
 
-    public void blockById(int id) {
+    public ResponseEntity<HttpStatus>  blockById(int id) {
         User user = getById(id);
 
+        /*
         if (user.isBlocked()) {
             throw new BusinessException("user is already blocked");
         }
+         */
 
         user.block();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    public void unblockById(int id) {
+    public ResponseEntity<HttpStatus> unblockById(int id) {
         User user = getById(id);
 
+        /*
         if (!user.isBlocked()) {
             throw new BusinessException("user is already unblocked");
         }
+         */
 
         user.unblock();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     public Collection<User> getAll() {

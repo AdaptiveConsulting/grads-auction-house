@@ -6,6 +6,7 @@ import com.weareadaptive.auction.controller.dto.UserResponse;
 import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.service.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,12 +54,12 @@ public class UserController {
     }
 
     @PutMapping("/{id}/block")
-    void blockById(@PathVariable("id") int id) {
-        userService.blockById(id);
+    ResponseEntity<HttpStatus> blockById(@PathVariable("id") int id) {
+        return userService.blockById(id);
     }
 
     @PutMapping("/{id}/unblock")
-    void unblockById(@PathVariable("id") int id) {
-        userService.unblockById(id);
+    ResponseEntity<HttpStatus> unblockById(@PathVariable("id") int id) {
+        return userService.unblockById(id);
     }
 }
