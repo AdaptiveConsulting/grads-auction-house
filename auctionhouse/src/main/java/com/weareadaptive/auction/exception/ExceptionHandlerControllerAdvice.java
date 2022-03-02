@@ -1,7 +1,6 @@
 package com.weareadaptive.auction.exception;
 
 import com.weareadaptive.auction.model.BusinessException;
-import com.weareadaptive.auction.model.NoContentResponseException;
 import com.weareadaptive.auction.model.ObjectNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -48,12 +47,5 @@ public class ExceptionHandlerControllerAdvice {
         var headers = new HttpHeaders();
         headers.setContentType(APPLICATION_PROBLEM_JSON);
         return new ResponseEntity<>(headers, NOT_FOUND);
-    }
-
-    @ExceptionHandler(NoContentResponseException.class)
-    public ResponseEntity<Object> handleNoContentResponseException() {
-        var headers = new HttpHeaders();
-        headers.setContentType(APPLICATION_PROBLEM_JSON);
-        return new ResponseEntity<>(headers, NO_CONTENT);
     }
 }

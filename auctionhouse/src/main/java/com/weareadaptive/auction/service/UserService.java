@@ -47,20 +47,22 @@ public class UserService {
 
     public void blockById(int id) {
         User user = getById(id);
-        user.block();
 
         if (user.isBlocked()) {
-            throw new NoContentResponseException();
+            throw new BusinessException("user is already blocked");
         }
+
+        user.block();
     }
 
     public void unblockById(int id) {
         User user = getById(id);
-        user.unblock();
 
         if (!user.isBlocked()) {
-            throw new NoContentResponseException();
+            throw new BusinessException("user is already unblocked");
         }
+
+        user.unblock();
     }
 
     public Collection<User> getAll() {
