@@ -3,6 +3,8 @@ package com.weareadaptive.auction.controller;
 import com.github.javafaker.Faker;
 import com.weareadaptive.auction.TestData;
 import com.weareadaptive.auction.controller.dto.CreateAuctionRequest;
+import com.weareadaptive.auction.service.AuctionLotService;
+import com.weareadaptive.auction.service.UserService;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -22,6 +23,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AuctionControllerTest {
   private final Faker faker = new Faker();
+  @Autowired
+  private UserService userService;
+  @Autowired
+  private AuctionLotService auctionLotService;
   @Autowired
   private TestData testData;
   @LocalServerPort
@@ -38,12 +43,12 @@ public class AuctionControllerTest {
   public void create_shouldReturnIfCreated() {
     var createRequest = new CreateAuctionRequest(
         faker.stock().nsdqSymbol(),
-        faker.random().nextDouble() + 0.01,
+        faker.random().nextDouble(),
         faker.random().nextInt(100) + 1);
 
     given()
         .baseUri(uri)
-        .header(AUTHORIZATION, testData.getToken(testData.user1()))
+        .header(AUTHORIZATION, testData.user1Token())
         .contentType(ContentType.JSON)
         .body(createRequest)
         .when()
@@ -61,19 +66,18 @@ public class AuctionControllerTest {
   public void create_shouldReturnBadRequestIfUserExist() {
     var createRequest = new CreateAuctionRequest(
         faker.stock().nsdqSymbol(),
-        0.00,
+        0,
         faker.random().nextInt(100) + 1);
 
     given()
         .baseUri(uri)
-        .header(AUTHORIZATION, testData.getToken(testData.user1()))
+        .header(AUTHORIZATION, testData.user1Token())
         .contentType(ContentType.JSON)
         .body(createRequest)
         .when()
         .post("/auctions")
         .then()
-        .statusCode(BAD_REQUEST.value())
-        .body("message", containsString("Minimum price must be above 0."));
+        .statusCode(BAD_REQUEST.value());
   }
 
 }
