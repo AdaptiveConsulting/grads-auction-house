@@ -21,7 +21,6 @@ public class UserService {
 
   public User create(String username, String password, String firstName, String lastName,
                      String organisation) {
-    // find method?
     if (userState.getUsernameIndex().containsKey(username)) {
       throw new BusinessException("username already exist");
     }
