@@ -12,13 +12,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AuctionControllerTest {
@@ -57,7 +61,7 @@ public class AuctionControllerTest {
         .statusCode(CREATED.value())
         .body("id", greaterThan(0))
         .body("symbol", equalTo(createRequest.symbol()))
-        .body("minPrice", equalTo(createRequest.minPrice()))
+        .body("minPrice", equalTo((float) createRequest.minPrice()))
         .body("quantity", equalTo(createRequest.quantity()));
   }
 
@@ -80,4 +84,53 @@ public class AuctionControllerTest {
         .statusCode(BAD_REQUEST.value());
   }
 
+  @DisplayName("Get should return an open auction by id")
+  @Test
+  public void get_returnAnAuctionById() {
+    var user = testData.user1();
+    var auctionLot = testData.getAuction_user1();
+
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user1Token())
+        .pathParam("id", auctionLot.getId())
+        .when()
+        .get("/auctions/{id}")
+        .then()
+        .statusCode(HttpStatus.OK.value())
+        .body("id", greaterThan(0))
+        .body("owner", equalTo(user.getUsername()))
+        .body("symbol", equalTo(auctionLot.getSymbol()))
+        .body("minPrice", equalTo((float) auctionLot.getMinPrice()))
+        .body("quantity", equalTo(auctionLot.getQuantity()));
+  }
+
+  @DisplayName("get return 403 when server refuse a user to access others' auctions")
+  @Test
+  public void get_return403WhenGetOthersAuctionLots() {
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user2Token())
+        .contentType(ContentType.JSON)
+        .pathParam("id", testData.getAuction_user1().getId())
+        .when()
+        .get("/auctions/{id}")
+        .then()
+        .statusCode(UNAUTHORIZED.value())
+        .body("message", containsString("user is not authorized"));
+  }
+
+  @DisplayName("get return 404 when a user get a nonexistent auction")
+  @Test
+  public void get_return404WhenUserDontExist() {
+
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user1Token())
+        .pathParam("id", auctionLotService.getAuctionState().getOwnerIndex().size())
+        .when()
+        .get("/auctions/{id}")
+        .then()
+        .statusCode(NOT_FOUND.value());
+  }
 }
