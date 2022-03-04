@@ -8,14 +8,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuctionState extends State<AuctionLot> {
 
-  private final Map<String, AuctionLot> ownerIndex;
+  private final Map<Integer, AuctionLot> auctionIndex;
 
   public AuctionState() {
-    this.ownerIndex = new HashMap<>();
+    this.auctionIndex = new HashMap<>();
   }
 
   @Override
   protected void onAdd(AuctionLot model) {
+    this.auctionIndex.put(model.getId(), model);
   }
 
   public List<LostBid> findLostBids(User user) {
@@ -49,7 +50,7 @@ public class AuctionState extends State<AuctionLot> {
         ).toList();
   }
 
-  public Map<String, AuctionLot> getOwnerIndex() {
-    return ownerIndex;
+  public Map<Integer, AuctionLot> getAuctionIndex() {
+    return auctionIndex;
   }
 }
