@@ -34,7 +34,7 @@ public class UserService {
         .stream().filter(u -> u.getId() == id).findFirst();
 
     if (user.isEmpty()) {
-      throw new ObjectNotFoundException();
+      throw new ObjectNotFoundException("User with " + id + " doesn't exist");
     }
 
     return user.get();
