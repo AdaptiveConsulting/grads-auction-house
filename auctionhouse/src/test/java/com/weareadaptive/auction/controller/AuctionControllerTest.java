@@ -14,7 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
+import static com.weareadaptive.auction.TestData.ADMIN_AUTH_TOKEN;
 import static io.restassured.RestAssured.given;
+import static java.lang.String.format;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -132,5 +134,34 @@ public class AuctionControllerTest {
         .get("/auctions/{id}")
         .then()
         .statusCode(NOT_FOUND.value());
+  }
+
+  @DisplayName("Get all should return all auctions")
+  @Test
+  public void getAll_returnAllAuctions() {
+    var user1 = testData.user1();
+    var user2 = testData.user2();
+    var auctionLot1 = testData.getAuction_user1();
+    var auctionLot2 = testData.getAuction_user2();
+    var find1 = format("find { it.id == %s }.", auctionLot1.getId());
+    var find2 = format("find { it.id == %s }.", auctionLot2.getId());
+
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user1Token())
+        .when()
+        .get("/auctions")
+        .then()
+        .statusCode(HttpStatus.OK.value())
+        .body(find1 + "id", equalTo(auctionLot1.getId()))
+        .body(find1 + "owner", equalTo(user1.getUsername()))
+        .body(find1 + "symbol", equalTo(auctionLot1.getSymbol()))
+        .body(find1 + "minPrice", equalTo((float) auctionLot1.getMinPrice()))
+        .body(find1 + "quantity", equalTo(auctionLot1.getQuantity()))
+        .body(find2 + "id", equalTo(auctionLot2.getId()))
+        .body(find2 + "owner", equalTo(user2.getUsername()))
+        .body(find2 + "symbol", equalTo(auctionLot2.getSymbol()))
+        .body(find2 + "minPrice", equalTo((float) auctionLot2.getMinPrice()))
+        .body(find2 + "quantity", equalTo(auctionLot2.getQuantity()));
   }
 }
