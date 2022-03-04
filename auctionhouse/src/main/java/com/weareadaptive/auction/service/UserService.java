@@ -39,8 +39,6 @@ public class UserService {
       throw new ObjectNotFoundException();
     }
 
-    UserMapper.map(user.get());
-
     return user.get();
   }
 
