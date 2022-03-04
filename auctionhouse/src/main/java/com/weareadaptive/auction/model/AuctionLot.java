@@ -161,7 +161,7 @@ public class AuctionLot implements Entity {
   public String toString() {
     return "AuctionLot{"
         + "owner=" + owner
-        + ", title='" + symbol + '\''
+        + ", symbol='" + symbol + '\''
         + ", status=" + status
         + '}';
   }

@@ -7,6 +7,7 @@ import com.weareadaptive.auction.model.BusinessException;
 import com.weareadaptive.auction.model.ObjectNotFoundException;
 import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.model.UserState;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -53,5 +54,9 @@ public class AuctionLotService {
 
   public AuctionState getAuctionState() {
     return auctionState;
+  }
+
+  public List<AuctionLot> getAll() {
+    return auctionState.stream().toList();
   }
 }

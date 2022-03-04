@@ -1,5 +1,10 @@
 package com.weareadaptive.auction.exception;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
+
 import com.weareadaptive.auction.model.BusinessException;
 import com.weareadaptive.auction.model.ObjectNotFoundException;
 import org.springframework.http.HttpHeaders;
@@ -7,11 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
 @ControllerAdvice
 public class ExceptionHandlerControllerAdvice {

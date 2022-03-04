@@ -5,6 +5,7 @@ import com.weareadaptive.auction.controller.dto.AuctionResponse;
 import com.weareadaptive.auction.controller.dto.CreateAuctionRequest;
 import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.service.AuctionLotService;
+import java.util.ArrayList;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,6 +43,11 @@ public class AuctionController {
   @GetMapping("/{id}")
   AuctionResponse getById(@PathVariable int id) {
     return AuctionMapper.map(auctionLotService.getById(id, getCurrentUsername()));
+  }
+
+  @GetMapping()
+  ArrayList<AuctionResponse> getAll() {
+    return AuctionMapper.mapAll(auctionLotService.getAll());
   }
 
   private String getCurrentUsername() {
