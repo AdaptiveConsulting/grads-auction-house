@@ -1,10 +1,23 @@
 package com.weareadaptive.auction.model;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AuctionState extends State<AuctionLot> {
+
+  private final Map<String, AuctionLot> ownerIndex;
+
+  public AuctionState() {
+    this.ownerIndex = new HashMap<>();
+  }
+
+  @Override
+  protected void onAdd(AuctionLot model) {
+  }
+
   public List<LostBid> findLostBids(User user) {
     if (user == null) {
       throw new IllegalArgumentException("user cannot be null");
@@ -34,5 +47,9 @@ public class AuctionState extends State<AuctionLot> {
                 winningBod.originalBid().getQuantity(),
                 winningBod.originalBid().getPrice()))
         ).toList();
+  }
+
+  public Map<String, AuctionLot> getOwnerIndex() {
+    return ownerIndex;
   }
 }
