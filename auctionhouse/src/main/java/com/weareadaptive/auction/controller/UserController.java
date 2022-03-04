@@ -49,7 +49,7 @@ public class UserController {
 
   @GetMapping
   ArrayList<UserResponse> getAll() {
-    return userService.getAll();
+    return UserMapper.mapAll(userService.getAll());
   }
 
   @PutMapping("/{id}")

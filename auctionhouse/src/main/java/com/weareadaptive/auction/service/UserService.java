@@ -1,12 +1,10 @@
 package com.weareadaptive.auction.service;
 
-import com.weareadaptive.auction.controller.dto.UserMapper;
-import com.weareadaptive.auction.controller.dto.UserResponse;
 import com.weareadaptive.auction.model.BusinessException;
 import com.weareadaptive.auction.model.ObjectNotFoundException;
 import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.model.UserState;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +59,7 @@ public class UserService {
     user.unblock();
   }
 
-  public ArrayList<UserResponse> getAll() {
-    return UserMapper.mapAll(userState.getUsernameIndex().values().stream().toList());
+  public List<User> getAll() {
+    return userState.getUsernameIndex().values().stream().toList();
   }
 }
