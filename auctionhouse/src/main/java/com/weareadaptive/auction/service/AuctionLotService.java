@@ -1,6 +1,7 @@
 package com.weareadaptive.auction.service;
 
-import com.weareadaptive.auction.exception.UnauthorizedException;
+import com.weareadaptive.auction.controller.dto.BidAuctionRequest;
+import com.weareadaptive.auction.controller.dto.NewBidResponse;
 import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.model.AuctionState;
 import com.weareadaptive.auction.model.BusinessException;
@@ -24,32 +25,22 @@ public class AuctionLotService {
   }
 
   public AuctionLot create(String ownerName, String symbol, double minPrice, int quantity) {
-    Optional<User> owner = userState.getByUsername(ownerName);
+    User owner = getUserByName(ownerName);
 
-    if (owner.isEmpty()) {
-      throw new BusinessException("owner name cannot be null");
-    }
-
-    var auctionLot = new AuctionLot(auctionState.nextId(), owner.get(), symbol, quantity, minPrice);
+    var auctionLot = new AuctionLot(auctionState.nextId(), owner, symbol, quantity, minPrice);
     auctionState.add(auctionLot);
 
     return auctionLot;
   }
 
-  public AuctionLot getById(int id, String currentUsername) {
-    Optional<AuctionLot> auctionLot = auctionState.stream()
-        .filter(a -> a.getId() == id)
-        .findFirst();
+  public AuctionLot getById(int id) {
+    AuctionLot auctionLot = auctionState.getAuctionIndex().get(id);
 
-    if (auctionLot.isEmpty()) {
-      throw new ObjectNotFoundException();
+    if (auctionLot == null) {
+      throw new ObjectNotFoundException("Auction with id " + id + " doesn't exist");
     }
 
-    if (!auctionLot.get().getOwner().getUsername().equals(currentUsername)) {
-      throw new UnauthorizedException("user is not authorized to access this auction");
-    }
-
-    return auctionLot.get();
+    return auctionLot;
   }
 
   public AuctionState getAuctionState() {
@@ -58,5 +49,41 @@ public class AuctionLotService {
 
   public List<AuctionLot> getAll() {
     return auctionState.stream().toList();
+  }
+
+  public NewBidResponse bid(int id, BidAuctionRequest bidAuctionRequest, String username) {
+    AuctionLot auctionLot = getById(id);
+
+    if (auctionLot.getStatus() == AuctionLot.Status.CLOSED) {
+      throw new BusinessException("Auction with ID " + id + " is closed");
+    }
+
+    if (auctionLot.getQuantity() > auctionLot.getQuantity()) {
+      throw new BusinessException("User cannot bid more than the auction lot's quantity");
+    }
+
+    if (auctionLot.getMinPrice() < auctionLot.getMinPrice()) {
+      throw new BusinessException("User cannot bid less than the auction lot's minimum price");
+    }
+
+    User bidder = getUserByName(username);
+
+    auctionLot.bid(bidder, bidAuctionRequest.quantity(), bidAuctionRequest.price());
+
+    return new NewBidResponse(
+        auctionLot.getId(),
+        auctionLot.getSymbol(),
+        bidder.getUsername(),
+        bidAuctionRequest.quantity(),
+        bidAuctionRequest.price());
+  }
+
+  private User getUserByName(String name) {
+    Optional<User> user = userState.getByUsername(name);
+
+    if (user.isEmpty()) {
+      throw new BusinessException("User " + name + "doesn't exist");
+    }
+    return user.get();
   }
 }

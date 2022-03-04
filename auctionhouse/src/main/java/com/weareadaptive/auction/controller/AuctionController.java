@@ -2,14 +2,16 @@ package com.weareadaptive.auction.controller;
 
 import com.weareadaptive.auction.controller.dto.AuctionMapper;
 import com.weareadaptive.auction.controller.dto.AuctionResponse;
+import com.weareadaptive.auction.controller.dto.BidAuctionRequest;
 import com.weareadaptive.auction.controller.dto.CreateAuctionRequest;
+import com.weareadaptive.auction.controller.dto.NewBidResponse;
 import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.service.AuctionLotService;
-import java.util.ArrayList;
+import java.security.Principal;
+import java.util.List;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,9 +33,10 @@ public class AuctionController {
 
   @PostMapping()
   @ResponseStatus(HttpStatus.CREATED)
-  AuctionResponse create(@RequestBody @Valid CreateAuctionRequest createAuctionRequest) {
+  AuctionResponse create(@RequestBody @Valid CreateAuctionRequest createAuctionRequest,
+                         Principal principal) {
     AuctionLot auctionLot = auctionLotService.create(
-        getCurrentUsername(),
+        principal.getName(),
         createAuctionRequest.symbol(),
         createAuctionRequest.minPrice(),
         createAuctionRequest.quantity());
@@ -41,16 +44,29 @@ public class AuctionController {
   }
 
   @GetMapping("/{id}")
-  AuctionResponse getById(@PathVariable int id) {
-    return AuctionMapper.map(auctionLotService.getById(id, getCurrentUsername()));
+  Object getById(@PathVariable int id, Principal principal) {
+    AuctionLot auctionLot = auctionLotService.getById(id);
+
+    if (isAuctionOwner(auctionLot, principal.getName())) {
+      return AuctionMapper.map(auctionLot);
+    } else {
+      return AuctionMapper.mapBasicInfo(auctionLot);
+    }
   }
 
   @GetMapping()
-  ArrayList<AuctionResponse> getAll() {
+  List<AuctionResponse> getAll() {
     return AuctionMapper.mapAll(auctionLotService.getAll());
   }
 
-  private String getCurrentUsername() {
-    return SecurityContextHolder.getContext().getAuthentication().getName();
+  @PostMapping("/{id}/bid")
+  NewBidResponse bidById(@PathVariable int id,
+                         @RequestBody @Valid BidAuctionRequest bidAuctionRequest,
+                         Principal principal) {
+    return auctionLotService.bid(id, bidAuctionRequest, principal.getName());
+  }
+
+  private boolean isAuctionOwner(AuctionLot auctionLot, String name) {
+    return auctionLot.getOwner().getUsername().equals(name);
   }
 }
