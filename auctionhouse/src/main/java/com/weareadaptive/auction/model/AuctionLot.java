@@ -157,6 +157,10 @@ public class AuctionLot implements Entity {
         .toList();
   }
 
+  public boolean isOwner(String user) {
+    return this.owner.getUsername().equals(user);
+  }
+
   @Override
   public String toString() {
     return "AuctionLot{"
