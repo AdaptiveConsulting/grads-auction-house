@@ -2,28 +2,24 @@ package com.weareadaptive.auction.service;
 
 import com.weareadaptive.auction.controller.dto.BidAuctionRequest;
 import com.weareadaptive.auction.controller.dto.NewBidResponse;
+import com.weareadaptive.auction.exception.UnauthorizedException;
 import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.model.AuctionState;
+import com.weareadaptive.auction.model.Bid;
 import com.weareadaptive.auction.model.BusinessException;
+import com.weareadaptive.auction.model.ClosingSummary;
 import com.weareadaptive.auction.model.ObjectNotFoundException;
 import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.model.UserState;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class AuctionLotService {
-  public static final String AUCTION_LOT_ENTITY = "AuctionLot";
-  private final AuctionState auctionState;
-  private final UserState userState;
-
-  public AuctionLotService(AuctionState auctionState, UserState userState) {
-    this.auctionState = auctionState;
-    this.userState = userState;
-  }
-
+public record AuctionLotService(AuctionState auctionState,
+                                UserState userState) {
   public AuctionLot create(String ownerName, String symbol, double minPrice, int quantity) {
     User owner = getUserByName(ownerName);
 
@@ -85,5 +81,33 @@ public class AuctionLotService {
       throw new BusinessException("User " + name + "doesn't exist");
     }
     return user.get();
+  }
+
+  public List<Bid> getBids(int auctionId, Principal principal) {
+    var auctionLot = getById(auctionId);
+    verifyOwnership(auctionLot, principal.getName());
+
+    return getById(auctionId).getBids();
+  }
+
+  public ClosingSummary close(int auctionId, Principal principal) {
+    var auctionLot = getById(auctionId);
+    verifyOwnership(auctionLot, principal.getName());
+    auctionLot.close();
+
+    return auctionLot.getClosingSummary();
+  }
+
+  public ClosingSummary getSummary(int auctionId, Principal principal) {
+    var auctionLot = getById(auctionId);
+    verifyOwnership(auctionLot, principal.getName());
+
+    return auctionLot.getClosingSummary();
+  }
+
+  private void verifyOwnership(AuctionLot auctionLot, String username) {
+    if (!auctionLot.isOwner(username)) {
+      throw new UnauthorizedException("The user is not the owner of auction lot.");
+    }
   }
 }

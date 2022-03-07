@@ -1,11 +1,14 @@
 package com.weareadaptive.auction.controller;
 
+import com.weareadaptive.auction.controller.dto.AuctionBasicResponse;
 import com.weareadaptive.auction.controller.dto.AuctionMapper;
 import com.weareadaptive.auction.controller.dto.AuctionResponse;
 import com.weareadaptive.auction.controller.dto.BidAuctionRequest;
+import com.weareadaptive.auction.controller.dto.BidInfo;
 import com.weareadaptive.auction.controller.dto.CreateAuctionRequest;
 import com.weareadaptive.auction.controller.dto.NewBidResponse;
 import com.weareadaptive.auction.model.AuctionLot;
+import com.weareadaptive.auction.model.ClosingSummary;
 import com.weareadaptive.auction.service.AuctionLotService;
 import java.security.Principal;
 import java.util.List;
@@ -43,8 +46,9 @@ public class AuctionController {
     return AuctionMapper.map(auctionLot);
   }
 
+  // return
   @GetMapping("/{id}")
-  Object getById(@PathVariable int id, Principal principal) {
+  AuctionBasicResponse getById(@PathVariable int id, Principal principal) {
     AuctionLot auctionLot = auctionLotService.getById(id);
 
     if (isAuctionOwner(auctionLot, principal.getName())) {
@@ -69,4 +73,20 @@ public class AuctionController {
   private boolean isAuctionOwner(AuctionLot auctionLot, String name) {
     return auctionLot.getOwner().getUsername().equals(name);
   }
+
+  @GetMapping("/{id}/all-bids")
+  List<BidInfo> getBids(@PathVariable int id, Principal principal) {
+    return AuctionMapper.mapAllBids(auctionLotService.getBids(id, principal));
+  }
+
+  @PostMapping("/{id}/close")
+  ClosingSummary close(@PathVariable int id, Principal principal) {
+    return auctionLotService.close(id, principal);
+  }
+
+  @GetMapping("/{id}/close-summary")
+  ClosingSummary getSummary(@PathVariable int id, Principal principal) {
+    return auctionLotService.getSummary(id, principal);
+  }
+
 }
