@@ -5,51 +5,22 @@ import com.weareadaptive.auction.model.Bid;
 import com.weareadaptive.auction.model.ClosingSummary;
 import java.util.List;
 
-public class AuctionResponse {
-  private final int id;
-  private final String symbol;
-  private final double minPrice;
-  private final int quantity;
+public class AuctionResponse extends AuctionBasicResponse {
   private final List<Bid> bids;
-  private final AuctionLot.Status status;
   private ClosingSummary closingSummary;
 
-
   public AuctionResponse(AuctionLot auctionLot) {
-    this.id = auctionLot.getId();
-    this.symbol = auctionLot.getSymbol();
-    this.minPrice = auctionLot.getMinPrice();
-    this.quantity = auctionLot.getQuantity();
+    super(auctionLot.getId(), auctionLot.getSymbol(), auctionLot.getMinPrice(),
+        auctionLot.getQuantity(), auctionLot.getStatus());
     this.bids = auctionLot.getBids();
-    this.status = auctionLot.getStatus();
 
-    if (this.status == AuctionLot.Status.CLOSED) {
-      ClosingSummary closingSummary = auctionLot.getClosingSummary();
+    if (this.getStatus() == AuctionLot.Status.CLOSED) {
+      this.closingSummary = auctionLot.getClosingSummary();
     }
-  }
-
-  public int getId() {
-    return id;
-  }
-
-  public String getSymbol() {
-    return symbol;
-  }
-
-  public double getMinPrice() {
-    return minPrice;
-  }
-
-  public int getQuantity() {
-    return quantity;
   }
 
   public List<Bid> getBids() {
     return bids;
-  }
-
-  public AuctionLot.Status getStatus() {
-    return status;
   }
 
   public ClosingSummary getClosingSummary() {

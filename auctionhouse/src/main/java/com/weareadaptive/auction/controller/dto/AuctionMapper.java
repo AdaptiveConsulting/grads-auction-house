@@ -1,9 +1,11 @@
 package com.weareadaptive.auction.controller.dto;
 
 import com.weareadaptive.auction.model.AuctionLot;
+import com.weareadaptive.auction.model.Bid;
 import java.util.List;
 
 public class AuctionMapper {
+
   private AuctionMapper() {
   }
 
@@ -23,5 +25,10 @@ public class AuctionMapper {
         auctionLot.getQuantity(),
         auctionLot.getStatus()
     );
+  }
+
+  public static List<BidInfo> mapAllBids(List<Bid> bids) {
+    return bids.stream().map(bid -> new BidInfo(bid.getUser().getUsername(), bid.getQuantity(),
+        bid.getPrice(), bid.getState(), bid.getWinQuantity())).toList();
   }
 }
