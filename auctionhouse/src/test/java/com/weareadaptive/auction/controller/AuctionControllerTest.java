@@ -332,6 +332,47 @@ public class AuctionControllerTest {
     //@formatter:on
   }
 
+  @DisplayName("close should return UNAUTHORIZED for non-owner")
+  @Test
+  public void close_shouldReturnUnauthorizedForNonOwner() {
+    var owner = testData.user1();
+    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
+    auctionLot.bid(testData.user2(), faker.random().nextInt(1, auctionLot.getQuantity()),
+        faker.random().nextDouble() + auctionLot.getMinPrice());
+
+    //@formatter:off
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user3Token())
+        .pathParam("id", auctionLot.getId())
+    .when()
+        .post("/auctions/{id}/close")
+    .then()
+        .statusCode(UNAUTHORIZED.value())
+        .body("message", containsString("not the owner"));
+    //@formatter:on
+  }
+
+  @DisplayName("close should return BAD_REQUEST for already closed auction")
+  @Test
+  public void close_shouldReturnBadRequestForClosedAuction() {
+    var owner = testData.user1();
+    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
+    auctionLot.close();
+
+    //@formatter:off
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user1Token())
+        .pathParam("id", auctionLot.getId())
+        .when()
+        .post("/auctions/{id}/close")
+        .then()
+        .statusCode(BAD_REQUEST.value())
+        .body("message", containsString("already closed"));
+    //@formatter:on
+  }
+
   @DisplayName("Get summary should return closing summary")
   @Test
   public void getSummary_shouldReturnClosingSummary() {
@@ -357,6 +398,48 @@ public class AuctionControllerTest {
     .then()
         .body("totalSoldQuantity", lessThanOrEqualTo(auctionLot.getQuantity()))
         .body("totalRevenue", equalTo((float) expectRevenue));
+    //@formatter:on
+  }
+
+  @DisplayName("Get summary should return BAD_REQUEST for opened auction")
+  @Test
+  public void getSummary_shouldReturnBadRequestForOpenedAuction() {
+    var owner = testData.user1();
+    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
+    auctionLot.bid(testData.user2(), faker.random().nextInt(1, auctionLot.getQuantity()),
+        faker.random().nextDouble() + auctionLot.getMinPrice());
+
+    //@formatter:off
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.getToken(owner))
+        .pathParam("id", auctionLot.getId())
+    .when()
+        .get("/auctions/{id}/close-summary")
+    .then()
+        .statusCode(BAD_REQUEST.value())
+        .body("message", containsString("must be closed"));
+    //@formatter:on
+  }
+
+  @DisplayName("Get summary should return BAD_REQUEST for non-owner")
+  @Test
+  public void getSummary_shouldReturnBadRequestForNonOwner() {
+    var owner = testData.user1();
+    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
+    auctionLot.bid(testData.user2(), faker.random().nextInt(1, auctionLot.getQuantity()),
+        faker.random().nextDouble() + auctionLot.getMinPrice());
+
+    //@formatter:off
+    given()
+        .baseUri(uri)
+        .header(AUTHORIZATION, testData.user3Token())
+        .pathParam("id", auctionLot.getId())
+    .when()
+        .get("/auctions/{id}/close-summary")
+    .then()
+        .statusCode(UNAUTHORIZED.value())
+        .body("message", containsString("not the owner"));
     //@formatter:on
   }
 }

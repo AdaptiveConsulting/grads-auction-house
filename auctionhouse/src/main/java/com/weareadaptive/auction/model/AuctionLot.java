@@ -81,8 +81,9 @@ public class AuctionLot implements Entity {
       throw new BusinessException("User cannot bid on his own auctions");
     }
 
-    if (quantity < 0) {
-      throw new BusinessException("quantity must be be above 0");
+    if (quantity < 0 || quantity > this.quantity) {
+      throw new BusinessException(
+          "bidding quantity must be be above 0 and/or not more than auction lot's quantity");
     }
 
     if (price < minPrice) {

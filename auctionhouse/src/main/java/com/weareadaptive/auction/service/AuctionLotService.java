@@ -54,14 +54,6 @@ public record AuctionLotService(AuctionState auctionState,
       throw new BusinessException("Auction with ID " + id + " is closed");
     }
 
-    if (auctionLot.getQuantity() > auctionLot.getQuantity()) {
-      throw new BusinessException("User cannot bid more than the auction lot's quantity");
-    }
-
-    if (auctionLot.getMinPrice() < auctionLot.getMinPrice()) {
-      throw new BusinessException("User cannot bid less than the auction lot's minimum price");
-    }
-
     User bidder = getUserByName(username);
 
     auctionLot.bid(bidder, bidAuctionRequest.quantity(), bidAuctionRequest.price());
