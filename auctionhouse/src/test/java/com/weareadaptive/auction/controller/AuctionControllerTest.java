@@ -86,7 +86,8 @@ public class AuctionControllerTest {
     .when()
         .post("/auctions")
     .then()
-        .statusCode(BAD_REQUEST.value());
+        .statusCode(BAD_REQUEST.value())
+        .body("message", equalTo("Bad Request"));
     //@formatter:on
   }
 
@@ -136,7 +137,7 @@ public class AuctionControllerTest {
     //@formatter:on
   }
 
-  @DisplayName("get return 404 when a user get a nonexistent auction")
+  @DisplayName("get should return NOT_FOUND when a user get a nonexistent auction")
   @Test
   public void get_return404WhenAuctionDontExist() {
     //@formatter:off
@@ -154,8 +155,6 @@ public class AuctionControllerTest {
   @DisplayName("Get all should return all auctions")
   @Test
   public void getAll_returnAllAuctions() {
-    var user1 = testData.user1();
-    var user2 = testData.user2();
     var auctionLot1 = testData.getAuction_user1();
     var auctionLot2 = testData.getAuction_user2();
     var find1 = format("find { it.id == %s }.", auctionLot1.getId());
@@ -225,7 +224,8 @@ public class AuctionControllerTest {
     .when()
         .post("/auctions/{id}/bid")
     .then()
-        .statusCode(BAD_REQUEST.value());
+        .statusCode(BAD_REQUEST.value())
+        .body("message", containsString("cannot bid on owned auction"));
     //@formatter:on
   }
 
@@ -240,14 +240,15 @@ public class AuctionControllerTest {
     //@formatter:off
     given()
         .baseUri(uri)
-        .header(AUTHORIZATION, testData.user1Token())
+        .header(AUTHORIZATION, testData.user2Token())
         .contentType(ContentType.JSON)
         .pathParam("id", testData.getAuction_user1().getId())
         .body(bidRequest)
     .when()
         .post("/auctions/{id}/bid")
     .then()
-        .statusCode(BAD_REQUEST.value());
+        .statusCode(BAD_REQUEST.value())
+        .body("message", containsString("not more than auction lot's quantity"));
     //@formatter:on
   }
 

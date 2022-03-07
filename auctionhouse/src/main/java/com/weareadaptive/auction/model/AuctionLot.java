@@ -78,7 +78,7 @@ public class AuctionLot implements Entity {
     }
 
     if (bidder == owner) {
-      throw new BusinessException("User cannot bid on his own auctions");
+      throw new BusinessException("User cannot bid on owned auction");
     }
 
     if (quantity < 0 || quantity > this.quantity) {
