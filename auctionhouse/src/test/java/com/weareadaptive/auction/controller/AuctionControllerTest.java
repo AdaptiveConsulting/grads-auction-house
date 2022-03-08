@@ -104,7 +104,6 @@ public class AuctionControllerTest {
     .when()
         .get("/auctions/{id}")
     .then()
-        .log().all()
         .statusCode(HttpStatus.OK.value())
         .body("id", greaterThan(0))
         .body("symbol", equalTo(auctionLot.getSymbol()))
@@ -128,7 +127,6 @@ public class AuctionControllerTest {
     .when()
         .get("/auctions/{id}")
     .then()
-        .log().all()
         .statusCode(HttpStatus.OK.value())
         .body("id", greaterThan(0))
         .body("symbol", equalTo(auctionLot.getSymbol()))
@@ -257,14 +255,16 @@ public class AuctionControllerTest {
   public void getAllBids_shouldReturnBidsOfAuction() {
     var owner = testData.user1();
     var auctionLot = testData.createRandomAuctionLot(owner);
-
     var bidder1 = testData.user2();
     var bidder2 = testData.user3();
-    auctionLot.bid(bidder1, 20, auctionLot.getMinPrice() + 0.02);
-    auctionLot.bid(bidder2, 30, auctionLot.getMinPrice() + 0.03);
-
-    var find1 = format("find { it.quantity == %s }.", 20);
-    var find2 = format("find { it.quantity == %s }.", 30);
+    auctionLot.bid(bidder1,
+        faker.random().nextInt(1, auctionLot.getQuantity()),
+        auctionLot.getMinPrice() + 0.02);
+    auctionLot.bid(bidder2,
+        faker.random().nextInt(1, auctionLot.getQuantity()),
+        auctionLot.getMinPrice() + 0.03);
+    var bid1 = auctionLot.getBids().get(0);
+    var bid2 = auctionLot.getBids().get(1);
 
     //@formatter:off
     given()
@@ -275,16 +275,17 @@ public class AuctionControllerTest {
     .when()
         .get("/auctions/{id}/all-bids")
     .then()
-        .body(find1 + "bidder", containsString(bidder1.getUsername()))
-        .body(find1 + "quantity", equalTo(20))
-        .body(find1 + "price", equalTo((float) (auctionLot.getMinPrice() + 0.02)))
-        .body(find1 + "state", equalTo(valueOf(Bid.State.PENDING)))
-        .body(find1 + "winQuantity", equalTo(0))
-        .body(find2 + "bidder", containsString(bidder2.getUsername()))
-        .body(find2 + "quantity", equalTo(30))
-        .body(find2 + "price", equalTo((float) (auctionLot.getMinPrice() + 0.03)))
-        .body(find2 + "state", equalTo(valueOf(Bid.State.PENDING)))
-        .body(find2 + "winQuantity", equalTo(0));
+        .log().all()
+        .body("[0].bidder", equalTo(bid1.getUser().getUsername()))
+        .body("[0].quantity", equalTo(bid1.getQuantity()))
+        .body("[0].price", equalTo((float) bid1.getPrice()))
+        .body("[0].state", equalTo(valueOf(bid1.getState())))
+        .body("[0].winQuantity", equalTo(bid1.getWinQuantity()))
+        .body("[1].bidder", equalTo(bid2.getUser().getUsername()))
+        .body("[1].quantity", equalTo(bid2.getQuantity()))
+        .body("[1].price", equalTo((float) bid2.getPrice()))
+        .body("[1].state", equalTo(valueOf(bid2.getState())))
+        .body("[1].winQuantity", equalTo(bid2.getWinQuantity()));
     //@formatter:on
   }
 
@@ -309,15 +310,19 @@ public class AuctionControllerTest {
   @Test
   public void close_shouldReturnClosingSummary() {
     var owner = testData.user1();
-    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
+    var auctionLot = auctionLotService.create(
+        owner.getUsername(),
+        faker.stock().nsdqSymbol(),
+        faker.random().nextDouble(),
+        faker.number().randomDigitNotZero());
     var bidder1 = testData.user2();
     var bidder2 = testData.user3();
-    var bidder3 = testData.user4();
-    auctionLot.bid(bidder1, 3, 3.00);
-    auctionLot.bid(bidder2, 5, 3.50);
-    auctionLot.bid(bidder3, 7, 4.00);
-
-    var expectRevenue = 7 * 4.00 + 3 * 3.50;
+    var quantity = auctionLot.getQuantity();
+    var minPrice = auctionLot.getMinPrice();
+    auctionLot.bid(bidder1, faker.random().nextInt(1, quantity),
+        minPrice + faker.random().nextDouble());
+    auctionLot.bid(bidder2, faker.random().nextInt(1, quantity),
+        minPrice + faker.random().nextDouble());
 
     //@formatter:off
     given()
@@ -328,8 +333,9 @@ public class AuctionControllerTest {
     .when()
         .post("/auctions/{id}/close")
     .then()
+        .log().all()
         .body("totalSoldQuantity", lessThanOrEqualTo(auctionLot.getQuantity()))
-        .body("totalRevenue", equalTo((float) expectRevenue));
+        .body("totalRevenue", greaterThan((float) 0));
     //@formatter:on
   }
 
@@ -381,12 +387,15 @@ public class AuctionControllerTest {
     var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
     var bidder1 = testData.user2();
     var bidder2 = testData.user3();
-    auctionLot.bid(bidder1, 5, 3.00);
-    auctionLot.bid(bidder2, 7, 3.50);
+    var bidder3 = testData.user4();
+    auctionLot.bid(bidder1, 3, 3.00);
+    auctionLot.bid(bidder2, 5, 3.50);
+    auctionLot.bid(bidder3, 7, 4.00);
 
-    var expectRevenue = 7 * 3.50 + 3 * 3.00;
+    var expectRevenue = 7 * 4.00 + 3 * 3.50;
 
-    auctionLot.close();
+    var find1 = String.format("winningBids[%d].originalBid.", 0);
+    var find2 = String.format("winningBids[%d].originalBid.", 1);
 
     //@formatter:off
     given()
@@ -394,9 +403,23 @@ public class AuctionControllerTest {
         .header(AUTHORIZATION, testData.getToken(owner))
         .contentType(ContentType.JSON)
         .pathParam("id", auctionLot.getId())
-    .when()
-        .get("/auctions/{id}/close-summary")
-    .then()
+        .when()
+        .post("/auctions/{id}/close")
+        .then()
+        .log().all()
+        .body("winningBids.size()", equalTo(2))
+        .body("winningBids[0].quantity", equalTo(7))
+        .body(find1 + "user.username", equalTo(bidder3.getUsername()))
+        .body(find1 + "quantity", equalTo(7))
+        .body(find1 + "price", equalTo((float) (4.0)))
+        .body(find1 + "state", equalTo(valueOf(Bid.State.WIN)))
+        .body(find1 + "winQuantity", equalTo(7))
+        .body("winningBids[1].quantity", equalTo(3))
+        .body(find2 + "user.username", equalTo(bidder2.getUsername()))
+        .body(find2 + "quantity", equalTo(5))
+        .body(find2 + "price", equalTo((float) (3.5)))
+        .body(find2 + "state", equalTo(valueOf(Bid.State.WIN)))
+        .body(find2 + "winQuantity", equalTo(3))
         .body("totalSoldQuantity", lessThanOrEqualTo(auctionLot.getQuantity()))
         .body("totalRevenue", equalTo((float) expectRevenue));
     //@formatter:on
