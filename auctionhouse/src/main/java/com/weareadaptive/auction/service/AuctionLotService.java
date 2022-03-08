@@ -13,7 +13,6 @@ import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.model.UserState;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 
@@ -21,7 +20,7 @@ import org.springframework.stereotype.Service;
 public record AuctionLotService(AuctionState auctionState,
                                 UserState userState) {
   public AuctionLot create(String ownerName, String symbol, double minPrice, int quantity) {
-    User owner = getUserByName(ownerName);
+    var owner = getUserByName(ownerName);
 
     var auctionLot = new AuctionLot(auctionState.nextId(), owner, symbol, quantity, minPrice);
     auctionState.add(auctionLot);
@@ -30,7 +29,7 @@ public record AuctionLotService(AuctionState auctionState,
   }
 
   public AuctionLot getById(int id) {
-    AuctionLot auctionLot = auctionState.getAuctionIndex().get(id);
+    var auctionLot = auctionState.getAuctionIndex().get(id);
 
     if (auctionLot == null) {
       throw new ObjectNotFoundException("Auction with id " + id + " doesn't exist");
@@ -48,13 +47,13 @@ public record AuctionLotService(AuctionState auctionState,
   }
 
   public NewBidResponse bid(int id, BidAuctionRequest bidAuctionRequest, String username) {
-    AuctionLot auctionLot = getById(id);
+    var auctionLot = getById(id);
 
     if (auctionLot.getStatus() == AuctionLot.Status.CLOSED) {
       throw new BusinessException("Auction with ID " + id + " is closed");
     }
 
-    User bidder = getUserByName(username);
+    var bidder = getUserByName(username);
 
     auctionLot.bid(bidder, bidAuctionRequest.quantity(), bidAuctionRequest.price());
 
@@ -67,7 +66,7 @@ public record AuctionLotService(AuctionState auctionState,
   }
 
   private User getUserByName(String name) {
-    Optional<User> user = userState.getByUsername(name);
+    var user = userState.getByUsername(name);
 
     if (user.isEmpty()) {
       throw new BusinessException("User " + name + "doesn't exist");

@@ -46,7 +46,6 @@ public class AuctionController {
     return AuctionMapper.map(auctionLot);
   }
 
-  // return
   @GetMapping("/{id}")
   AuctionBasicResponse getById(@PathVariable int id, Principal principal) {
     AuctionLot auctionLot = auctionLotService.getById(id);

@@ -17,6 +17,7 @@ import com.github.javafaker.Faker;
 import com.weareadaptive.auction.TestData;
 import com.weareadaptive.auction.controller.dto.BidAuctionRequest;
 import com.weareadaptive.auction.controller.dto.CreateAuctionRequest;
+import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.model.Bid;
 import com.weareadaptive.auction.service.AuctionLotService;
 import io.restassured.http.ContentType;
@@ -131,7 +132,8 @@ public class AuctionControllerTest {
         .body("id", greaterThan(0))
         .body("symbol", equalTo(auctionLot.getSymbol()))
         .body("minPrice", equalTo((float) auctionLot.getMinPrice()))
-        .body("quantity", equalTo(auctionLot.getQuantity()));
+        .body("quantity", equalTo(auctionLot.getQuantity()))
+        .body("status", equalTo(valueOf(AuctionLot.Status.OPENED)));
     //@formatter:on
   }
 
@@ -275,7 +277,6 @@ public class AuctionControllerTest {
     .when()
         .get("/auctions/{id}/all-bids")
     .then()
-        .log().all()
         .body("[0].bidder", equalTo(bid1.getUser().getUsername()))
         .body("[0].quantity", equalTo(bid1.getQuantity()))
         .body("[0].price", equalTo((float) bid1.getPrice()))
@@ -372,9 +373,9 @@ public class AuctionControllerTest {
         .baseUri(uri)
         .header(AUTHORIZATION, testData.user1Token())
         .pathParam("id", auctionLot.getId())
-        .when()
+    .when()
         .post("/auctions/{id}/close")
-        .then()
+    .then()
         .statusCode(BAD_REQUEST.value())
         .body("message", containsString("already closed"));
     //@formatter:on
@@ -403,10 +404,9 @@ public class AuctionControllerTest {
         .header(AUTHORIZATION, testData.getToken(owner))
         .contentType(ContentType.JSON)
         .pathParam("id", auctionLot.getId())
-        .when()
+    .when()
         .post("/auctions/{id}/close")
-        .then()
-        .log().all()
+    .then()
         .body("winningBids.size()", equalTo(2))
         .body("winningBids[0].quantity", equalTo(7))
         .body(find1 + "user.username", equalTo(bidder3.getUsername()))
