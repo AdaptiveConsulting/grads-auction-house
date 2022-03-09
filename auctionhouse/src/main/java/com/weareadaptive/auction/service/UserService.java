@@ -1,10 +1,8 @@
 package com.weareadaptive.auction.service;
 
-import com.weareadaptive.auction.model.BusinessException;
-import com.weareadaptive.auction.model.ObjectNotFoundException;
 import com.weareadaptive.auction.model.User;
-import java.util.List;
 import com.weareadaptive.auction.repository.UserRepository;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -19,59 +17,33 @@ public class UserService {
 
   public User create(String username, String password, String firstName, String lastName,
                      String organisation) {
-    if (userState.getUsernameIndex().containsKey(username)) {
-      throw new BusinessException("username already exist");
-    }
-
-    var user = new User(userState.nextId(), username, password, firstName, lastName, organisation);
-    userState.add(user);
-
-    return user;
-
-    /*
-        var user = new User();
+    var user = new User();
     user.setUsername(username);
     user.setPassword(password);
     user.setFirstName(firstName);
     user.setLastName(lastName);
     user.setOrganisation(organisation);
-    userRepository.save(user);
-    return user;
-     */
+    return userRepository.save(user);
   }
 
   public User getById(int id) {
-    Optional<User> user = userState.getUsernameIndex().values()
-        .stream().filter(u -> u.getId() == id).findFirst();
-
-    if (user.isEmpty()) {
-      throw new ObjectNotFoundException("User with " + id + " doesn't exist");
-    }
-
-    return user.get();
+    throw new UnsupportedOperationException();
   }
 
   public User updateById(int id, String firstName, String lastName, String organisation) {
-    User user = getById(id);
-    user.setFirstName(firstName);
-    user.setLastName(lastName);
-    user.setOrganisation(organisation);
-
-    return user;
+    throw new UnsupportedOperationException();
   }
 
   public void blockById(int id) {
-    User user = getById(id);
-    user.block();
+    throw new UnsupportedOperationException();
   }
 
   public void unblockById(int id) {
-    User user = getById(id);
-    user.unblock();
+    throw new UnsupportedOperationException();
   }
 
   public List<User> getAll() {
-    return userState.getUsernameIndex().values().stream().toList();
+    throw new UnsupportedOperationException();
   }
 
   public Optional<User> validateUsernamePassword(String username, String password) {

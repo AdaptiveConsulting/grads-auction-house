@@ -18,14 +18,9 @@ import com.weareadaptive.auction.IntegrationTest;
 import com.weareadaptive.auction.TestData;
 import com.weareadaptive.auction.controller.dto.CreateUserRequest;
 import com.weareadaptive.auction.controller.dto.UpdateUserRequest;
-import com.weareadaptive.auction.service.UserService;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
 public class UserControllerTest extends IntegrationTest {
@@ -75,13 +70,11 @@ public class UserControllerTest extends IntegrationTest {
             .body(find1 + "firstName", equalTo(testData.user1().getFirstName()))
             .body(find1 + "lastName", equalTo(testData.user1().getLastName()))
             .body(find1 + "organisation", equalTo(testData.user1().getOrganisation()))
-            .body(find1 + "email", equalTo(testData.user1().getEmail()))
             // Validate User2
             .body(find2 + "username", equalTo(testData.user2().getUsername()))
             .body(find2 + "firstName", equalTo(testData.user2().getFirstName()))
             .body(find2 + "lastName", equalTo(testData.user2().getLastName()))
-            .body(find2 + "organisation", equalTo(testData.user2().getOrganisation()))
-            .body(find2 + "email", equalTo(testData.user2().getEmail()));
+            .body(find2 + "organisation", equalTo(testData.user2().getOrganisation()));
         //@formatter:on
   }
 
