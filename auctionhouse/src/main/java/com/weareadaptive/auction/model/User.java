@@ -3,17 +3,26 @@ package com.weareadaptive.auction.model;
 
 import static org.apache.logging.log4j.util.Strings.isBlank;
 
-public class User implements Entity {
-  private final int id;
-  private final String username;
-  private final String password;
-  private final boolean isAdmin;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity(name = "AuctionUser")
+public class User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
+  private String username;
+  private String password;
+  private boolean isAdmin;
   private String firstName;
   private String lastName;
   private String organisation;
-  private String phone;
-  private String email;
   private boolean blocked;
+
+  public User() {
+  }
 
   public User(
       int id,
@@ -65,8 +74,32 @@ public class User implements Entity {
         + '}';
   }
 
+  public void setId(int id) {
+    this.id = id;
+  }
+
   public String getUsername() {
     return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public void setAdmin(boolean admin) {
+    isAdmin = admin;
+  }
+
+  public void setBlocked(boolean blocked) {
+    this.blocked = blocked;
   }
 
   public boolean validatePassword(String password) {
@@ -104,14 +137,6 @@ public class User implements Entity {
 
   public boolean isAdmin() {
     return isAdmin;
-  }
-
-  public String getPhone() {
-    return phone;
-  }
-
-  public String getEmail() {
-    return email;
   }
 
   public boolean isBlocked() {

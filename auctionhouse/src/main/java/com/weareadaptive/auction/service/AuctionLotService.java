@@ -3,7 +3,6 @@ package com.weareadaptive.auction.service;
 import static java.lang.String.format;
 
 import com.weareadaptive.auction.model.AuctionState;
-import com.weareadaptive.auction.model.UserState;
 import org.springframework.stereotype.Service;
 
 @Service
