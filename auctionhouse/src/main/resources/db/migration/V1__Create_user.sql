@@ -4,7 +4,11 @@ CREATE TABLE auction_user (
     password VARCHAR (50) NOT NULL,
     is_admin BOOLEAN NOT NULL,
     first_name VARCHAR (50) NOT NULL,
-    lastName VARCHAR (50) NOT NULL,
+    last_name VARCHAR (50) NOT NULL,
     organisation VARCHAR (50) NOT NULL,
-    is_blocked BOOLEAN NOT NUll,
+    blocked BOOLEAN NOT NUll
 );
+
+INSERT INTO auction_user (
+    username, password, is_admin, first_name, last_name, organisation, blocked
+) VALUES ('ADMIN', 'adminpassword', TRUE, 'admin', 'admin', 'Adaptive', FALSE);

@@ -10,7 +10,6 @@ import com.weareadaptive.auction.model.BusinessException;
 import com.weareadaptive.auction.model.ClosingSummary;
 import com.weareadaptive.auction.model.ObjectNotFoundException;
 import com.weareadaptive.auction.model.User;
-import com.weareadaptive.auction.model.UserState;
 import java.security.Principal;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public record AuctionLotService(AuctionState auctionState,
-                                UserState userState) {
+                                UserService userService) {
   public AuctionLot create(String ownerName, String symbol, double minPrice, int quantity) {
     var owner = getUserByName(ownerName);
 
@@ -66,12 +65,16 @@ public record AuctionLotService(AuctionState auctionState,
   }
 
   private User getUserByName(String name) {
-    var user = userState.getByUsername(name);
+    throw new UnsupportedOperationException();
+    /*
+    var user = userService.getByUsername(name);
 
     if (user.isEmpty()) {
       throw new BusinessException("User " + name + "doesn't exist");
     }
     return user.get();
+
+     */
   }
 
   public List<Bid> getBids(int auctionId, Principal principal) {

@@ -36,8 +36,6 @@ public class TestData {
     user2 = createRandomUser();
     user3 = createRandomUser();
     user4 = createRandomUser();
-    auction_user1 = createRandomAuctionLot(user1);
-    auction_user2 = createRandomAuctionLot(user2);
   }
 
   public User user1() {
