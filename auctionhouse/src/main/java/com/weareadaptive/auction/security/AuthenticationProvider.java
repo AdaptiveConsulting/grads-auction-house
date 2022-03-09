@@ -1,6 +1,6 @@
 package com.weareadaptive.auction.security;
 
-import com.weareadaptive.auction.model.UserState;
+import com.weareadaptive.auction.service.UserService;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class AuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
   @Autowired
-  private UserState userState;
+  private UserService userService;
 
   @Override
   protected void additionalAuthenticationChecks(
@@ -46,7 +46,7 @@ public class AuthenticationProvider extends AbstractUserDetailsAuthenticationPro
     }
     var username = token.substring(0, splitIndex);
     var password = token.substring(splitIndex + 1);
-    var user = userState.validateUsernamePassword(username, password);
+    var user = userService.validateUsernamePassword(username, password);
 
     if (user.isEmpty()) {
       throw new UsernameNotFoundException("Bad token");

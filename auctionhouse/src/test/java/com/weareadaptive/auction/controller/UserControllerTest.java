@@ -14,6 +14,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import com.github.javafaker.Faker;
+import com.weareadaptive.auction.IntegrationTest;
 import com.weareadaptive.auction.TestData;
 import com.weareadaptive.auction.controller.dto.CreateUserRequest;
 import com.weareadaptive.auction.controller.dto.UpdateUserRequest;
@@ -27,23 +28,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserControllerTest {
+public class UserControllerTest extends IntegrationTest {
   public static final int INVALID_USER_ID = 99999;
-
-  @Autowired
-  private UserService userService;
-  @Autowired
-  private TestData testData;
-  @LocalServerPort
-  private int port;
-  private String uri;
   private final Faker faker = new Faker();
-
-  @BeforeEach
-  public void initialiseRestAssuredMockMvcStandalone() {
-    uri = "http://localhost:" + port;
-  }
 
   @DisplayName("create should return a bad request when the username is duplicated")
   @Test
