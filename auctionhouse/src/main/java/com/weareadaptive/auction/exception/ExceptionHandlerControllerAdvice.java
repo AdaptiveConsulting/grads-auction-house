@@ -45,10 +45,15 @@ public class ExceptionHandlerControllerAdvice {
   }
 
   @ExceptionHandler(ObjectNotFoundException.class)
-  public ResponseEntity<Object> handleNotFoundException() {
+  public ResponseEntity<Object> handleNotFoundException(ObjectNotFoundException e) {
     var headers = new HttpHeaders();
     headers.setContentType(APPLICATION_PROBLEM_JSON);
-    return new ResponseEntity<>(headers, NOT_FOUND);
+    return new ResponseEntity<>(
+        new Problem(
+            NOT_FOUND.value(),
+            NOT_FOUND.name(),
+            e.getMessage()),
+        headers, NOT_FOUND);
   }
 
   @ExceptionHandler(UnauthorizedException.class)

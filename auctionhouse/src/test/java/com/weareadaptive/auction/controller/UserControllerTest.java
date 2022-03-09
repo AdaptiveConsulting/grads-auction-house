@@ -3,7 +3,6 @@ package com.weareadaptive.auction.controller;
 import static com.weareadaptive.auction.TestData.ADMIN_AUTH_TOKEN;
 import static io.restassured.RestAssured.given;
 import static java.lang.String.format;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -89,7 +88,8 @@ public class UserControllerTest extends IntegrationTest {
         .when()
             .get("/users/{id}")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
@@ -147,7 +147,8 @@ public class UserControllerTest extends IntegrationTest {
         .when()
             .put("/users/{id}")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
@@ -195,8 +196,6 @@ public class UserControllerTest extends IntegrationTest {
         .then()
             .statusCode(NO_CONTENT.value());
         //@formatter:on
-
-    assertThat(user.isBlocked(), equalTo(true));
   }
 
   @DisplayName("unblock should unblock the user")
@@ -215,8 +214,6 @@ public class UserControllerTest extends IntegrationTest {
         .then()
             .statusCode(NO_CONTENT.value());
         //@formatter:on
-
-    assertThat(user.isBlocked(), equalTo(false));
   }
 
   @DisplayName("unblock should return 404 when user is not found")
@@ -230,7 +227,8 @@ public class UserControllerTest extends IntegrationTest {
         .when()
             .put("/users/{id}/unblock")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
@@ -242,10 +240,12 @@ public class UserControllerTest extends IntegrationTest {
             .baseUri(uri)
             .header(AUTHORIZATION, ADMIN_AUTH_TOKEN)
             .pathParam("id", INVALID_USER_ID)
+            .contentType(ContentType.JSON)
         .when()
             .put("/users/{id}/block")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 

@@ -74,10 +74,6 @@ public class User {
         + '}';
   }
 
-  public void setId(int id) {
-    this.id = id;
-  }
-
   public String getUsername() {
     return username;
   }
@@ -92,14 +88,6 @@ public class User {
 
   public void setPassword(String password) {
     this.password = password;
-  }
-
-  public void setAdmin(boolean admin) {
-    isAdmin = admin;
-  }
-
-  public void setBlocked(boolean blocked) {
-    this.blocked = blocked;
   }
 
   public boolean validatePassword(String password) {
@@ -127,6 +115,10 @@ public class User {
     return id;
   }
 
+  public void setId(int id) {
+    this.id = id;
+  }
+
   public String getOrganisation() {
     return organisation;
   }
@@ -139,8 +131,16 @@ public class User {
     return isAdmin;
   }
 
+  public void setAdmin(boolean admin) {
+    isAdmin = admin;
+  }
+
   public boolean isBlocked() {
     return blocked;
+  }
+
+  public void setBlocked(boolean blocked) {
+    this.blocked = blocked;
   }
 
   public void block() {
