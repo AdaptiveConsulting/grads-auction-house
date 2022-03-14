@@ -24,24 +24,8 @@ public class User {
   public User() {
   }
 
-  public User(
-      int id,
-      String username,
-      String password,
-      String firstName,
-      String lastName,
-      String organisation) {
-    this(id, username, password, firstName, lastName, organisation, false);
-  }
-
-  public User(
-      int id,
-      String username,
-      String password,
-      String firstName,
-      String lastName,
-      String organisation,
-      boolean isAdmin) {
+  public User(int id, String username, String password, String firstName, String lastName,
+              String organisation) {
     if (isBlank(username)) {
       throw new BusinessException("username cannot be null or empty");
     }
@@ -64,7 +48,7 @@ public class User {
     this.firstName = firstName;
     this.lastName = lastName;
     this.organisation = organisation;
-    this.isAdmin = isAdmin;
+    this.isAdmin = false;
   }
 
   @Override

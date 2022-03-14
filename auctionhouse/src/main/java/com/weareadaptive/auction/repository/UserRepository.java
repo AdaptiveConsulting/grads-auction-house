@@ -15,11 +15,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
   @Transactional
   @Modifying
-  @Query("update AuctionUser u set u.blocked=true where u.id=?1")
+  @Query("update AuctionUser u set u.blocked = true where u.id = ?1")
   int block(int id);
 
   @Transactional
   @Modifying
-  @Query("update AuctionUser u set u.blocked=false where u.id=?1")
+  @Query("update AuctionUser u set u.blocked = false where u.id = ?1")
   int unblock(int id);
+
+  @Query("select u from AuctionUser u where u.username = ?1")
+  User findByName(String ownerName);
 }
