@@ -1,21 +1,32 @@
 package com.weareadaptive.auction.controller.dto;
 
 import com.weareadaptive.auction.model.AuctionLot;
+import com.weareadaptive.auction.model.Bid;
 
 public class AuctionBasicResponse {
   private final int id;
   private final String symbol;
   private final double minPrice;
   private final int quantity;
-  private final AuctionLot.Status status;
+  private final String status;
+  private Bid bid;
 
   public AuctionBasicResponse(int id, String symbol, double minPrice, int quantity,
-                              AuctionLot.Status status) {
+                              String status) {
     this.id = id;
     this.symbol = symbol;
     this.minPrice = minPrice;
     this.quantity = quantity;
     this.status = status;
+  }
+
+  public AuctionBasicResponse(AuctionLot auctionLot, Bid bid) {
+    this.id = auctionLot.getId();
+    this.symbol = auctionLot.getSymbol();
+    this.minPrice = auctionLot.getMinPrice();
+    this.quantity = auctionLot.getQuantity();
+    this.status = auctionLot.getStatus();
+    this.bid = bid;
   }
 
   public int getId() {
@@ -34,7 +45,11 @@ public class AuctionBasicResponse {
     return quantity;
   }
 
-  public AuctionLot.Status getStatus() {
+  public String getStatus() {
     return status;
+  }
+
+  public Bid getBid() {
+    return bid;
   }
 }

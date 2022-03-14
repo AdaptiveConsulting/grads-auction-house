@@ -9,26 +9,18 @@ public class AuctionMapper {
   private AuctionMapper() {
   }
 
-  public static AuctionResponse map(AuctionLot auctionLot) {
-    return new AuctionResponse(auctionLot);
+  public static AuctionResponse map(AuctionLot auctionLot, List<Bid> bids) {
+    return new AuctionResponse(auctionLot, bids);
   }
 
-  public static List<AuctionResponse> mapAll(List<AuctionLot> auctions) {
-    return auctions.stream().map(AuctionMapper::map).toList();
-  }
-
-  public static AuctionBasicResponse mapBasicInfo(AuctionLot auctionLot) {
-    return new AuctionBasicResponse(
-        auctionLot.getId(),
-        auctionLot.getSymbol(),
-        auctionLot.getMinPrice(),
-        auctionLot.getQuantity(),
-        auctionLot.getStatus()
-    );
+  public static AuctionBasicResponse mapBasicInfo(AuctionLot auctionLot, Bid bid) {
+    return new AuctionBasicResponse(auctionLot, bid);
   }
 
   public static List<BidInfo> mapAllBids(List<Bid> bids) {
-    return bids.stream().map(bid -> new BidInfo(bid.getUser().getUsername(), bid.getQuantity(),
+    return bids.stream().map(bid -> new BidInfo(bid.getUserId(), bid.getQuantity(),
         bid.getPrice(), bid.getState(), bid.getWinQuantity())).toList();
   }
+
+
 }

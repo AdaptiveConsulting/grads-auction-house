@@ -11,6 +11,7 @@ import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.model.ClosingSummary;
 import com.weareadaptive.auction.service.AuctionLotService;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -43,39 +44,50 @@ public class AuctionController {
         createAuctionRequest.symbol(),
         createAuctionRequest.minPrice(),
         createAuctionRequest.quantity());
-    return AuctionMapper.map(auctionLot);
+    return new AuctionResponse(auctionLot, null);
   }
 
   @GetMapping("/{id}")
   AuctionBasicResponse getById(@PathVariable int id, Principal principal) {
-    AuctionLot auctionLot = auctionLotService.getById(id);
+    var auctionLot = auctionLotService.getById(id);
 
-    if (isAuctionOwner(auctionLot, principal.getName())) {
-      return AuctionMapper.map(auctionLot);
-    } else {
-      return AuctionMapper.mapBasicInfo(auctionLot);
-    }
+    return getAuctionResponse(auctionLot, principal);
   }
 
   @GetMapping()
-  List<AuctionResponse> getAll() {
-    return AuctionMapper.mapAll(auctionLotService.getAll());
+  List<AuctionBasicResponse> getAll(Principal principal) {
+    var auctionLots = auctionLotService.getAll();
+    List<AuctionBasicResponse> responses = new ArrayList<>();
+    auctionLots.forEach(auctionLot -> responses.add(getAuctionResponse(auctionLot, principal)));
+    return responses;
+  }
+
+  private AuctionBasicResponse getAuctionResponse(AuctionLot auctionLot, Principal principal) {
+    if (auctionLotService.isAuctionOwner(auctionLot, principal.getName())) {
+      return AuctionMapper.map(
+          auctionLot,
+          auctionLotService.getAllBids(auctionLot.getId(), principal));
+    } else {
+      return AuctionMapper.mapBasicInfo(
+          auctionLot,
+          auctionLotService.getBidByBidder(auctionLot.getId(), principal).orElse(null));
+    }
   }
 
   @PostMapping("/{id}/bid")
   NewBidResponse bidById(@PathVariable int id,
                          @RequestBody @Valid BidAuctionRequest bidAuctionRequest,
                          Principal principal) {
-    return auctionLotService.bid(id, bidAuctionRequest, principal.getName());
-  }
-
-  private boolean isAuctionOwner(AuctionLot auctionLot, String name) {
-    return auctionLot.getOwner().getUsername().equals(name);
+    return auctionLotService.bid(
+        id,
+        bidAuctionRequest.quantity(),
+        bidAuctionRequest.price(),
+        principal.getName());
   }
 
   @GetMapping("/{id}/all-bids")
   List<BidInfo> getBids(@PathVariable int id, Principal principal) {
-    return AuctionMapper.mapAllBids(auctionLotService.getBids(id, principal));
+    return AuctionMapper.mapAllBids(auctionLotService.getAllBids(id, principal));
   }
 
   @PostMapping("/{id}/close")
