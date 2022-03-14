@@ -19,6 +19,8 @@ public abstract class IntegrationTest {
   protected String uri;
   @Autowired
   protected TestData testData;
+  @Autowired
+  protected AuctionTestData auctionTestData;
 
   @Container
   public static PostgreSQLContainer<?> postgreSQL =

@@ -1,9 +1,7 @@
 package com.weareadaptive.auction;
 
 import com.github.javafaker.Faker;
-import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.model.User;
-import com.weareadaptive.auction.service.AuctionLotService;
 import com.weareadaptive.auction.service.UserService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -14,18 +12,14 @@ public class TestData {
   public static final String PASSWORD = "mypassword";
   public static final String ADMIN_AUTH_TOKEN = "Bearer ADMIN:adminpassword";
 
-  private final AuctionLotService auctionLotService;
   private final UserService userService;
   private final Faker faker;
   private User user1;
   private User user2;
   private User user3;
   private User user4;
-  private AuctionLot auction_user1;
-  private AuctionLot auction_user2;
 
-  public TestData(AuctionLotService auctionLotService, UserService userService) {
-    this.auctionLotService = auctionLotService;
+  public TestData(UserService userService) {
     this.userService = userService;
     faker = new Faker();
   }
@@ -54,14 +48,6 @@ public class TestData {
     return user4;
   }
 
-  public AuctionLot getAuction_user1() {
-    return auction_user1;
-  }
-
-  public AuctionLot getAuction_user2() {
-    return auction_user2;
-  }
-
   public String user1Token() {
     return getToken(user1);
   }
@@ -88,15 +74,6 @@ public class TestData {
         faker.company().name()
     );
     return user;
-  }
-
-  public AuctionLot createRandomAuctionLot(User user) {
-    return auctionLotService.create(
-        user.getUsername(),
-        faker.stock().nsdqSymbol(),
-        faker.random().nextDouble() + 0.01,
-        faker.random().nextInt(100) + 1
-    );
   }
 
   public String getToken(User user) {
