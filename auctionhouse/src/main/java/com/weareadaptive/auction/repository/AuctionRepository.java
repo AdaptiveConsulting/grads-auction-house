@@ -10,7 +10,4 @@ import org.springframework.stereotype.Repository;
 public interface AuctionRepository extends JpaRepository<AuctionLot, Integer> {
   @Query("select a from AuctionLot a where a.id = ?1 and a.ownerId = ?2")
   Optional<AuctionLot> validateAuctionOwner(int auctionId, int userId);
-
-  @Query("select a.id, a.symbol, a.minPrice, a.quantity, a.status, a.createTime from AuctionLot a")
-  AuctionLot getAuctionResponse(int id);
 }
