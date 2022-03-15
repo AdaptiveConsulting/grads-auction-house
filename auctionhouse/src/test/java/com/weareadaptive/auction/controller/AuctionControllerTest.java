@@ -19,24 +19,20 @@ import com.weareadaptive.auction.controller.dto.BidAuctionRequest;
 import com.weareadaptive.auction.controller.dto.CreateAuctionRequest;
 import com.weareadaptive.auction.model.AuctionLot;
 import com.weareadaptive.auction.model.Bid;
+import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.service.AuctionLotService;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 
 public class AuctionControllerTest extends IntegrationTest {
   private static final Faker faker = new Faker();
   @Autowired
   private AuctionLotService auctionLotService;
-
-  @BeforeEach
-  public void setUp() {
-    auctionTestData.createInitData();
-  }
 
   @DisplayName("Create should create and return new auction")
   @Test
@@ -88,7 +84,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("Get should return a full auction info for owner")
   @Test
   public void get_returnAnAuctionById() {
-    var auctionLot = auctionTestData.auction_user1();
+    var auctionLot = createRandomAuctionLot(testData.user1());
 
     //@formatter:off
     given()
@@ -111,7 +107,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("Get should return basic info of auction if it's regular user")
   @Test
   public void get_returnBasicAuctionInfo() {
-    var auctionLot = auctionTestData.auction_user2();
+    var auctionLot = createRandomAuctionLot(testData.user2());
 
     //@formatter:off
     given()
@@ -148,8 +144,8 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("Get all should return all auctions")
   @Test
   public void getAll_returnAllAuctions() {
-    var auctionLot1 = auctionTestData.auction_user1();
-    var auctionLot2 = auctionTestData.auction_user2();
+    var auctionLot1 = createRandomAuctionLot(testData.user1());
+    var auctionLot2 = createRandomAuctionLot(testData.user2());
     var find1 = format("find { it.id == %s }.", auctionLot1.getId());
     var find2 = format("find { it.id == %s }.", auctionLot2.getId());
 
@@ -175,7 +171,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("Bid by auction id should return created bid")
   @Test
   public void bid_shouldReturnAuctionBid() {
-    var auctionLot = auctionTestData.auction_user2();
+    var auctionLot = createRandomAuctionLot(testData.user2());
     var bidder = testData.user1();
     var bidRequest = new BidAuctionRequest(
         faker.random().nextInt(1, auctionLot.getQuantity()),
@@ -202,7 +198,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("Bid should return a bad request for bidding own auction")
   @Test
   public void bid_shouldReturnOwnerBadRequest() {
-    var auctionLot = auctionTestData.auction_user1();
+    var auctionLot = createRandomAuctionLot(testData.user1());
     var bidRequest = new BidAuctionRequest(
         faker.random().nextInt(1, auctionLot.getQuantity()),
         auctionLot.getMinPrice() + faker.random().nextDouble());
@@ -225,7 +221,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("Bid should return a bad request for bidding with bad inputs")
   @Test
   public void bid_shouldReturnBadInputsBadRequest() {
-    var auctionLot = auctionTestData.auction_user1();
+    var auctionLot = createRandomAuctionLot(testData.user1());
     var bidRequest = new BidAuctionRequest(
         auctionLot.getQuantity() + 100,
         auctionLot.getMinPrice() + faker.random().nextDouble());
@@ -248,8 +244,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("get all bids should return list of bid for an auction by id")
   @Test
   public void getAllBids_shouldReturnBidsOfAuction() {
-    var owner = testData.user1();
-    var auctionLot = auctionTestData.createRandomAuctionLot(owner);
+    var auctionLot = createRandomAuctionLot(testData.user1());
     var bidder1 = testData.user2();
     var bidder2 = testData.user3();
     auctionLotService.bid(auctionLot.getId(),
@@ -264,7 +259,7 @@ public class AuctionControllerTest extends IntegrationTest {
     //@formatter:off
     given()
         .baseUri(uri)
-        .header(AUTHORIZATION, testData.getToken(owner))
+        .header(AUTHORIZATION, testData.user1Token())
         .contentType(ContentType.JSON)
         .pathParam("id", auctionLot.getId())
     .when()
@@ -286,12 +281,14 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("get all bids should return unauthorized if it's not owner")
   @Test
   public void getAllBids_shouldReturnUnauthorized() {
+    var auctionLot = createRandomAuctionLot(testData.user2());
+
     //@formatter:off
     given()
         .baseUri(uri)
         .header(AUTHORIZATION, testData.user1Token())
         .contentType(ContentType.JSON)
-        .pathParam("id", auctionTestData.auction_user2().getId())
+        .pathParam("id", auctionLot.getId())
     .when()
         .get("/auctions/{id}/all-bids")
     .then()
@@ -339,17 +336,12 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("close should return UNAUTHORIZED for non-owner")
   @Test
   public void close_shouldReturnUnauthorizedForNonOwner() {
-    var owner = testData.user1();
-    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
-    auctionLotService.bid(auctionLot.getId(),
-        faker.random().nextInt(1, auctionLot.getQuantity()),
-        faker.random().nextDouble() + auctionLot.getMinPrice(),
-        testData.user2().getUsername());
+    var auctionLot = createRandomAuctionLot(testData.user1());
 
     //@formatter:off
     given()
         .baseUri(uri)
-        .header(AUTHORIZATION, testData.user3Token())
+        .header(AUTHORIZATION, testData.user2Token())
         .pathParam("id", auctionLot.getId())
     .when()
         .post("/auctions/{id}/close")
@@ -362,8 +354,7 @@ public class AuctionControllerTest extends IntegrationTest {
   @DisplayName("close should return BAD_REQUEST for already closed auction")
   @Test
   public void close_shouldReturnBadRequestForClosedAuction() {
-    var owner = testData.user1();
-    var auctionLot = auctionLotService.create(owner.getUsername(), "TEST", 2.50, 10);
+    var auctionLot = createRandomAuctionLot(testData.user1());
 
     RestAssured.given()
         .baseUri(uri)
@@ -467,5 +458,14 @@ public class AuctionControllerTest extends IntegrationTest {
         .statusCode(UNAUTHORIZED.value())
         .body("message", containsString("not the owner"));
     //@formatter:on
+  }
+
+  private AuctionLot createRandomAuctionLot(User user) {
+    return auctionLotService.create(
+        user.getUsername(),
+        faker.stock().nsdqSymbol(),
+        faker.random().nextDouble() + 0.01,
+        faker.random().nextInt(100) + 1
+    );
   }
 }
