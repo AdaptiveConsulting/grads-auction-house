@@ -64,11 +64,12 @@ public class AuctionController {
 
   private AuctionBasicResponse getAuctionResponse(AuctionLot auctionLot, Principal principal) {
     if (auctionLotService.isAuctionOwner(auctionLot, principal.getName())) {
-      return AuctionMapper.map(
+
+      return new AuctionResponse(
           auctionLot,
           auctionLotService.getAllBids(auctionLot.getId(), principal));
     } else {
-      return AuctionMapper.mapBasicInfo(
+      return new AuctionBasicResponse(
           auctionLot,
           auctionLotService.getBidByBidder(auctionLot.getId(), principal).orElse(null));
     }
