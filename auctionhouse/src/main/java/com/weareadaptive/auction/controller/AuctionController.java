@@ -64,7 +64,6 @@ public class AuctionController {
 
   private AuctionBasicResponse getAuctionResponse(AuctionLot auctionLot, Principal principal) {
     if (auctionLotService.isAuctionOwner(auctionLot, principal.getName())) {
-
       return new AuctionResponse(
           auctionLot,
           auctionLotService.getAllBids(auctionLot.getId(), principal));

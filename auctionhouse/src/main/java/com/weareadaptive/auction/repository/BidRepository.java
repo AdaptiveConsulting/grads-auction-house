@@ -13,10 +13,10 @@ public interface BidRepository extends JpaRepository<Bid, Integer> {
   List<Bid> getAuctionBids(int auctionId);
 
   @Query("select b from AuctionBid b where b.auctionId = ?1 order by b.price desc")
-  List<Bid> getBidsByPrice(int auctionId);
+  List<Bid> getBidsOrderedByPrice(int auctionId);
 
   @Query("select b from AuctionBid b where b.auctionId = ?1 and b.state = 'WIN' order by b.price desc")
-  List<Bid> getWinningBids(int auctionId);
+  List<Bid> getOrderedWinningBids(int auctionId);
 
   @Query("select b from AuctionBid b where b.auctionId = ?1 and b.userId = ?2")
   Optional<Bid> getBidByBidderId(int auctionId, int userId);

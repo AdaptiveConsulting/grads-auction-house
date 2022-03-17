@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public record AuctionLotService(AuctionRepository auctionRepository, UserRepository userRepository,
                                 BidRepository bidRepository) {
@@ -94,11 +93,17 @@ public record AuctionLotService(AuctionRepository auctionRepository, UserReposit
   public ClosingSummary close(int auctionId, Principal principal) {
     verifyOwnership(auctionId, principal);
     var auctionLot = getById(auctionId);
+
     if (auctionLot.getStatus().equals(String.valueOf(AuctionLot.Status.CLOSED))) {
       throw new BusinessException("Cannot close because already closed.");
     }
 
-    var orderedBids = bidRepository.getBidsByPrice(auctionId);
+    saveAuctionBids(auctionLot);
+    return getSummary(auctionId, principal);
+  }
+
+  private void saveAuctionBids(AuctionLot auctionLot) {
+    var orderedBids = bidRepository.getBidsOrderedByPrice(auctionLot.getId());
     var availableQuantity = auctionLot.getQuantity();
     var revenue = BigDecimal.ZERO;
 
@@ -121,8 +126,6 @@ public record AuctionLotService(AuctionRepository auctionRepository, UserReposit
     auctionLot.setClosingTime(Instant.now());
     auctionLot.setStatus(AuctionLot.Status.CLOSED);
     auctionRepository.save(auctionLot);
-
-    return getSummary(auctionId, principal);
   }
 
   public ClosingSummary getSummary(int auctionId, Principal principal) {
@@ -134,7 +137,7 @@ public record AuctionLotService(AuctionRepository auctionRepository, UserReposit
     }
 
     return new ClosingSummary(
-        bidRepository.getWinningBids(auctionId),
+        bidRepository.getOrderedWinningBids(auctionId),
         auctionLot.getTotalSoldQuantity(),
         auctionLot.getTotalRevenue(),
         auctionLot.getClosingTime());

@@ -20,7 +20,6 @@ public class AuctionLot {
   private double minPrice;
   private int quantity;
   private String status;
-  private Instant createTime;
   private int totalSoldQuantity;
   private double totalRevenue;
   private Instant closingTime;
@@ -61,10 +60,6 @@ public class AuctionLot {
     return ownerId;
   }
 
-  public void setOwnerId(int ownerId) {
-    this.ownerId = ownerId;
-  }
-
   public String getSymbol() {
     return symbol;
   }
@@ -95,14 +90,6 @@ public class AuctionLot {
 
   public void setStatus(Status status) {
     this.status = String.valueOf(status);
-  }
-
-  public Instant getCreateTime() {
-    return createTime;
-  }
-
-  public void setCreateTime(Instant createTime) {
-    this.createTime = createTime;
   }
 
   public int getTotalSoldQuantity() {
