@@ -18,13 +18,31 @@ import com.weareadaptive.auction.TestData;
 import com.weareadaptive.auction.controller.dto.CreateUserRequest;
 import com.weareadaptive.auction.controller.dto.UpdateUserRequest;
 import io.restassured.http.ContentType;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 public class UserControllerTest extends IntegrationTest {
   public static final int INVALID_USER_ID = 99999;
   private final Faker faker = new Faker();
+
+  @Container
+  public static PostgreSQLContainer<?> postgreSQL =
+      new PostgreSQLContainer<>("postgres:13.2")
+          .withUsername("testUsername")
+          .withPassword("testPassword");
+
+  @DynamicPropertySource
+  public static void postgreSQLProperties(@NotNull DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgreSQL::getJdbcUrl);
+    registry.add("spring.datasource.username", postgreSQL::getUsername);
+    registry.add("spring.datasource.password", postgreSQL::getPassword);
+  }
 
   @DisplayName("create should return a bad request when the username is duplicated")
   @Test

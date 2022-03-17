@@ -23,16 +23,33 @@ import com.weareadaptive.auction.model.User;
 import com.weareadaptive.auction.service.AuctionLotService;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 public class AuctionControllerTest extends IntegrationTest {
   private static final Faker faker = new Faker();
   @Autowired
   private AuctionLotService auctionLotService;
+
+  @Container
+  public static PostgreSQLContainer<?> postgreSQL =
+      new PostgreSQLContainer<>("postgres:13.2")
+          .withUsername("testUsername")
+          .withPassword("testPassword");
+
+  @DynamicPropertySource
+  public static void postgreSQLProperties(@NotNull DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgreSQL::getJdbcUrl);
+    registry.add("spring.datasource.username", postgreSQL::getUsername);
+    registry.add("spring.datasource.password", postgreSQL::getPassword);
+  }
 
   @DisplayName("Create should create and return new auction")
   @Test
