@@ -1,0 +1,92 @@
+/auctions/create:
+  post:
+    body:
+      token: String
+      symbol: String
+      minPrice: double
+      quantity: integer
+    header:
+      token: String
+    response:
+      201: Resource created! <auction>
+      400: Invalid body params / auction already created using that symbol
+      401: Unauthorized token invalid
+      403: admin not allowed!
+      404:
+/auction/get/{id}:
+  get:
+    body:
+      token: String
+    header:
+      token: String
+    response:
+      200: auction
+      400: Invalid id/token type
+      401: Unauthorized token invalid
+      403: Admin not allowed!
+      404: Requested auction not found
+/auction/getall:
+  get:
+    body:
+    header:
+      token: String
+    response:
+      200: Stream<auction>
+      400: Invalid token type provided
+      401: Unauthorized token invalid
+      403: Admin not allowed!
+      404: There are no auctions created!
+#Cannot be owner
+/auction/{id}/bid:
+  post:
+    body:
+      token: String
+      bidQuantity: integer
+      bidAmount: double
+    response:
+      201: Bid created! <bid object>
+      400: Invalid Id/token type provided
+      401: Unauthorized token invalid
+      403: forbidden only a non-owner can place bids / admin not allowed
+      404: Cannot find the requested auction
+
+# only the owner can do this
+/auction/{id}/bid/get-all:
+  get:
+    body:
+    header:
+      token: String
+    response:
+      200: Stream<bids>
+      400: Invalid token type provided
+      401: Unauthorized token invalid
+      403: Only an owner is allowed to do this  / admin not allowed
+      404: The auction is empty there are no bids
+
+#this is not an idempotent action so it needs Post
+#only an owner can do this
+/auction/{id}/close:
+  post:
+    body:
+    header:
+      token: String
+  response:
+    200: <Successfully closed!> (maybe return object, but not necessary)
+    400: Invalid Id/token type provided
+    401: Unauthorized token invalid
+    403: Only an owner is allowed to do this/ auction already closed /  admin not allowed
+    404: Could not find auction based on id
+
+/auction/{id}/summary:
+  put:
+    body:
+    header:
+      token: String
+    response:
+      200: Auction Summary String
+      400: Invalid Id/token type provided
+      401: Unauthorized token invalid
+      403: admin not allowed
+      404: Could not find auction based on id
+
+

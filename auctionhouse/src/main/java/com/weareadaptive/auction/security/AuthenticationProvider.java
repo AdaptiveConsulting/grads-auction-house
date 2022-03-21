@@ -1,9 +1,9 @@
 package com.weareadaptive.auction.security;
 
-import com.weareadaptive.auction.model.UserState;
+
+import com.weareadaptive.auction.repository.UserRepository;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
@@ -16,8 +16,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
-  @Autowired
-  private UserState userState;
+  private final UserRepository userRepository;
+
+  public AuthenticationProvider(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
 
   @Override
   protected void additionalAuthenticationChecks(
@@ -46,12 +49,12 @@ public class AuthenticationProvider extends AbstractUserDetailsAuthenticationPro
     }
     var username = token.substring(0, splitIndex);
     var password = token.substring(splitIndex + 1);
-    var user = userState.validateUsernamePassword(username, password);
+    var user = userRepository.validate(username, password);
 
     if (user.isEmpty()) {
       throw new UsernameNotFoundException("Bad token");
     }
-    return User.builder()
+    return  User.builder()
           .username(user.get().getUsername())
           .password(password)
           .roles(user.get().isAdmin() ? "ADMIN" : "USER")

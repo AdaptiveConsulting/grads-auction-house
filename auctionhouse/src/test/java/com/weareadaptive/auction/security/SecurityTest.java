@@ -2,7 +2,6 @@ package com.weareadaptive.auction.security;
 
 import static com.weareadaptive.auction.TestData.ADMIN_AUTH_TOKEN;
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.useRelaxedHTTPSValidation;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -32,10 +31,9 @@ public class SecurityTest {
     //@formatter:off
     given()
       .baseUri(uri)
-    .when()
+      .when()
       .get("/test")
-    .then()
-      .statusCode(HttpStatus.UNAUTHORIZED.value());
+      .then().statusCode(HttpStatus.UNAUTHORIZED.value());
     //@formatter:on
   }
 
@@ -45,11 +43,10 @@ public class SecurityTest {
     given()
       .baseUri(uri)
       .header(AUTHORIZATION, ADMIN_AUTH_TOKEN)
-    .when()
+      .when()
       .get("/test")
-    .then()
-      .statusCode(HttpStatus.OK.value())
-      .body(equalTo("houra"));
+      .then()
+      .statusCode(HttpStatus.OK.value()).body(equalTo("houra"));
     //@formatter:on
   }
 
@@ -62,10 +59,9 @@ public class SecurityTest {
     given()
       .baseUri(uri)
       .header(AUTHORIZATION, testData.getToken(user))
-    .when()
+      .when()
       .get("/test")
-    .then()
-      .statusCode(HttpStatus.UNAUTHORIZED.value());
+      .then().statusCode(HttpStatus.UNAUTHORIZED.value());
     //@formatter:on
   }
 
@@ -75,11 +71,10 @@ public class SecurityTest {
     given()
       .baseUri(uri)
       .header(AUTHORIZATION, ADMIN_AUTH_TOKEN)
-    .when()
+      .when()
       .get("/test/adminOnly")
-    .then()
-      .statusCode(HttpStatus.OK.value())
-      .body(equalTo("super"));
+      .then()
+      .statusCode(HttpStatus.OK.value()).body(equalTo("super"));
     //@formatter:on
   }
 
@@ -89,10 +84,33 @@ public class SecurityTest {
     given()
       .baseUri(uri)
       .header(AUTHORIZATION, testData.user1Token())
-    .when()
+      .when()
       .get("/test/adminOnly")
-    .then()
-      .statusCode(HttpStatus.FORBIDDEN.value());
+      .then().statusCode(HttpStatus.FORBIDDEN.value());
+    //@formatter:on
+  }
+
+  @Test
+  public void shouldBeaUser() {
+    //@formatter:off
+    given()
+      .baseUri(uri)
+      .header(AUTHORIZATION, testData.user1Token())
+      .when()
+      .get("/test/userOnly")
+      .then().statusCode(HttpStatus.OK.value());
+    //@formatter:on
+  }
+
+  @Test
+  public void shouldBeaUser1() {
+    //@formatter:off
+    given()
+      .baseUri(uri)
+      .header(AUTHORIZATION, ADMIN_AUTH_TOKEN)
+      .when()
+      .get("/test/userOnly")
+      .then().statusCode(HttpStatus.FORBIDDEN.value());
     //@formatter:on
   }
 }

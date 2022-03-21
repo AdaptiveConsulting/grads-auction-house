@@ -20,5 +20,14 @@ public class TestController {
     return "super";
   }
 
+
+  @PreAuthorize("hasRole('ROLE_USER')")
+  @GetMapping("userOnly")
+  public String userOnly() {
+    return "super";
+  }
+
+
+
 }
 
