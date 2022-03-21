@@ -15,8 +15,8 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import com.github.javafaker.Faker;
 import com.weareadaptive.auction.TestData;
-import com.weareadaptive.auction.controller.dto.CreateUserRequest;
-import com.weareadaptive.auction.controller.dto.UpdateUserRequest;
+import com.weareadaptive.auction.controller.dto.users.CreateUserRequest;
+import com.weareadaptive.auction.controller.dto.users.UpdateUserRequest;
 import com.weareadaptive.auction.service.UserService;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;

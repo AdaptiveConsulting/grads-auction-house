@@ -25,6 +25,10 @@ public class User implements Entity {
     this(id, username, password, firstName, lastName, organisation, false);
   }
 
+  //test
+
+  //another test
+
   public User(
       int id,
       String username,
