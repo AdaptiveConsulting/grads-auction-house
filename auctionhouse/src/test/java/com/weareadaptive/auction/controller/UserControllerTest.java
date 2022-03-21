@@ -3,7 +3,6 @@ package com.weareadaptive.auction.controller;
 import static com.weareadaptive.auction.TestData.ADMIN_AUTH_TOKEN;
 import static io.restassured.RestAssured.given;
 import static java.lang.String.format;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -14,35 +13,35 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import com.github.javafaker.Faker;
+import com.weareadaptive.auction.IntegrationTest;
 import com.weareadaptive.auction.TestData;
 import com.weareadaptive.auction.controller.dto.CreateUserRequest;
 import com.weareadaptive.auction.controller.dto.UpdateUserRequest;
-import com.weareadaptive.auction.service.UserService;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.api.BeforeEach;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class UserControllerTest {
+public class UserControllerTest extends IntegrationTest {
   public static final int INVALID_USER_ID = 99999;
-
-  @Autowired
-  private UserService userService;
-  @Autowired
-  private TestData testData;
-  @LocalServerPort
-  private int port;
-  private String uri;
   private final Faker faker = new Faker();
 
-  @BeforeEach
-  public void initialiseRestAssuredMockMvcStandalone() {
-    uri = "http://localhost:" + port;
+  @Container
+  public static PostgreSQLContainer<?> postgreSQL =
+      new PostgreSQLContainer<>("postgres:13.2")
+          .withUsername("testUsername")
+          .withPassword("testPassword");
+
+  @DynamicPropertySource
+  public static void postgreSQLProperties(@NotNull DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", postgreSQL::getJdbcUrl);
+    registry.add("spring.datasource.username", postgreSQL::getUsername);
+    registry.add("spring.datasource.password", postgreSQL::getPassword);
   }
 
   @DisplayName("create should return a bad request when the username is duplicated")
@@ -88,13 +87,11 @@ public class UserControllerTest {
             .body(find1 + "firstName", equalTo(testData.user1().getFirstName()))
             .body(find1 + "lastName", equalTo(testData.user1().getLastName()))
             .body(find1 + "organisation", equalTo(testData.user1().getOrganisation()))
-            .body(find1 + "email", equalTo(testData.user1().getEmail()))
             // Validate User2
             .body(find2 + "username", equalTo(testData.user2().getUsername()))
             .body(find2 + "firstName", equalTo(testData.user2().getFirstName()))
             .body(find2 + "lastName", equalTo(testData.user2().getLastName()))
-            .body(find2 + "organisation", equalTo(testData.user2().getOrganisation()))
-            .body(find2 + "email", equalTo(testData.user2().getEmail()));
+            .body(find2 + "organisation", equalTo(testData.user2().getOrganisation()));
         //@formatter:on
   }
 
@@ -109,7 +106,8 @@ public class UserControllerTest {
         .when()
             .get("/users/{id}")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
@@ -167,7 +165,8 @@ public class UserControllerTest {
         .when()
             .put("/users/{id}")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
@@ -215,8 +214,6 @@ public class UserControllerTest {
         .then()
             .statusCode(NO_CONTENT.value());
         //@formatter:on
-
-    assertThat(user.isBlocked(), equalTo(true));
   }
 
   @DisplayName("unblock should unblock the user")
@@ -235,8 +232,6 @@ public class UserControllerTest {
         .then()
             .statusCode(NO_CONTENT.value());
         //@formatter:on
-
-    assertThat(user.isBlocked(), equalTo(false));
   }
 
   @DisplayName("unblock should return 404 when user is not found")
@@ -250,7 +245,8 @@ public class UserControllerTest {
         .when()
             .put("/users/{id}/unblock")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
@@ -262,10 +258,12 @@ public class UserControllerTest {
             .baseUri(uri)
             .header(AUTHORIZATION, ADMIN_AUTH_TOKEN)
             .pathParam("id", INVALID_USER_ID)
+            .contentType(ContentType.JSON)
         .when()
             .put("/users/{id}/block")
         .then()
-            .statusCode(NOT_FOUND.value());
+            .statusCode(NOT_FOUND.value())
+            .body("message", containsString("doesn't exist"));
         //@formatter:on
   }
 
